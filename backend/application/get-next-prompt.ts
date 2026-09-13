@@ -5,20 +5,27 @@ import type {
   TrainingMode,
 } from "@/shared/training";
 
+export class PromptPoolExhaustedError extends Error {
+  constructor(public readonly poolSize: number) {
+    super("Every prompt in this pool has already been used.");
+    this.name = "PromptPoolExhaustedError";
+  }
+}
+
 export class GetNextPrompt {
   constructor(private readonly repository: PromptRepository) {}
 
   execute(
     mode: TrainingMode,
     difficulty: Difficulty,
-    excludeId?: string,
+    excludeIds: readonly string[] = [],
   ): PromptResponse {
     const pool = this.repository.findByModeAndDifficulty(mode, difficulty);
-    const candidates =
-      pool.length > 1 ? pool.filter((prompt) => prompt.id !== excludeId) : pool;
+    const excluded = new Set(excludeIds);
+    const candidates = pool.filter((prompt) => !excluded.has(prompt.id));
 
     if (candidates.length === 0) {
-      throw new Error("No training prompts are available for this selection.");
+      throw new PromptPoolExhaustedError(pool.length);
     }
 
     const index = Math.floor(Math.random() * candidates.length);

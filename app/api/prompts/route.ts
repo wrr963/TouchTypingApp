@@ -1,4 +1,7 @@
-import { GetNextPrompt } from "@/backend/application/get-next-prompt";
+import {
+  GetNextPrompt,
+  PromptPoolExhaustedError,
+} from "@/backend/application/get-next-prompt";
 import { InMemoryPromptRepository } from "@/backend/infrastructure/in-memory-prompt-repository";
 import type { Difficulty, TrainingMode } from "@/shared/training";
 import { NextResponse } from "next/server";
@@ -23,11 +26,18 @@ export async function GET(request: Request) {
       service.execute(
         mode,
         toDifficulty(url.searchParams.get("difficulty")),
-        url.searchParams.get("exclude") ?? undefined,
+        url.searchParams.getAll("exclude"),
       ),
       { headers: { "Cache-Control": "no-store" } },
     );
-  } catch {
+  } catch (error) {
+    if (error instanceof PromptPoolExhaustedError) {
+      return NextResponse.json(
+        { error: "PROMPT_POOL_EXHAUSTED", poolSize: error.poolSize },
+        { status: 409, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+
     return NextResponse.json(
       { error: "Prompt pool is unavailable." },
       { status: 503 },

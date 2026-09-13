@@ -1,6 +1,9 @@
 "use client";
 
-import { fetchNextPrompt } from "@/frontend/services/prompt-client";
+import {
+  fetchNextPrompt,
+  PromptPoolExhaustedError,
+} from "@/frontend/services/prompt-client";
 import type {
   Difficulty,
   TrainingMode,
@@ -53,6 +56,7 @@ export function useTypingSession() {
   const [loadError, setLoadError] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const seenPromptIdsRef = useRef<string[]>([]);
   const durationSeconds = durationMinutes * 60;
 
   useEffect(() => {
@@ -99,15 +103,31 @@ export function useTypingSession() {
   );
 
   const loadPrompt = useCallback(
-    async (excludeId?: string) => {
+    async (): Promise<"loaded" | "exhausted" | "error"> => {
       setLoadError("");
       try {
-        const response = await fetchNextPrompt(mode, difficulty, excludeId);
+        const response = await fetchNextPrompt(
+          mode,
+          difficulty,
+          seenPromptIdsRef.current,
+        );
+        seenPromptIdsRef.current = [
+          ...seenPromptIdsRef.current,
+          response.prompt.id,
+        ];
         setPrompt(response.prompt);
         setTyped("");
         setPromptErrors(0);
         setTransitioning(false);
+        return "loaded";
       } catch (error) {
+        if (error instanceof PromptPoolExhaustedError) {
+          setPrompt(null);
+          setTransitioning(false);
+          setPhase("finished");
+          return "exhausted";
+        }
+
         setLoadError(
           error instanceof Error
             ? error.message
@@ -115,6 +135,7 @@ export function useTypingSession() {
         );
         setPhase("ready");
         setTransitioning(false);
+        return "error";
       }
     },
     [difficulty, mode],
@@ -122,6 +143,7 @@ export function useTypingSession() {
 
   const start = useCallback(async () => {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    seenPromptIdsRef.current = [];
     setPhase("loading");
     setRemaining(durationSeconds);
     setScore(0);
@@ -133,8 +155,8 @@ export function useTypingSession() {
     setStreak(0);
     setLastLearned(null);
     setTyped("");
-    await loadPrompt();
-    setPhase((current) => (current === "ready" ? current : "running"));
+    const result = await loadPrompt();
+    if (result === "loaded") setPhase("running");
   }, [durationSeconds, loadPrompt]);
 
   const finishPrompt = useCallback(
@@ -152,7 +174,7 @@ export function useTypingSession() {
       setTransitioning(true);
 
       advanceTimerRef.current = setTimeout(() => {
-        void loadPrompt(finishedPrompt.id);
+        void loadPrompt();
       }, 420);
     },
     [difficulty, loadPrompt, streak],
@@ -217,6 +239,7 @@ export function useTypingSession() {
   );
 
   const selectMode = useCallback((next: TrainingMode) => {
+    seenPromptIdsRef.current = [];
     setModeState(next);
     setPhase("ready");
     setPrompt(null);
@@ -224,6 +247,7 @@ export function useTypingSession() {
   }, []);
 
   const selectDifficulty = useCallback((next: Difficulty) => {
+    seenPromptIdsRef.current = [];
     setDifficultyState(next);
     setPhase("ready");
     setPrompt(null);
@@ -231,6 +255,7 @@ export function useTypingSession() {
   }, []);
 
   const selectDuration = useCallback((next: SessionMinutes) => {
+    seenPromptIdsRef.current = [];
     setDurationMinutes(next);
     setRemaining(next * 60);
     setPhase("ready");
@@ -246,6 +271,7 @@ export function useTypingSession() {
 
   const reset = useCallback(() => {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    seenPromptIdsRef.current = [];
     setPhase("ready");
     setPrompt(null);
     setTyped("");
