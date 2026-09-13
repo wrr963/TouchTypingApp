@@ -1,100 +1,243 @@
-# vinext-starter
+# KEYDRIFT
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+KEYDRIFTは、英語・日本語・数字・記号・コードを混在させた問題で、実践的なタッチタイピングを鍛えるWebアプリケーションです。
 
-## Prerequisites
+一般知識やエンジニア向け知識の解説を問題ごとに表示するため、タイピング速度だけでなく知識も同時に身につけられます。アカウント登録は不要です。
 
-- Node.js `>=22.13.0`
+## 公開版
 
-## Quick Start
+- Webアプリ: https://keydrift-lab-20260913.wertwert99639.chatgpt.site
+- ソースコード: https://github.com/wrr963/TouchTypingApp
 
-```bash
+公開版は現在、所有者限定で公開しています。
+
+## 主な機能
+
+- 一般モードとエンジニアモード
+- 各モード3段階の難易度
+- 1分から5分までの制限時間設定（初期値は3分）
+- 日本語、英語、数字、記号、空白、Tab、改行を含む問題
+- 単語・短文・複文・長文・コードスニペット
+- 入力済み文字のリアルタイム表示
+- 正解文字、誤入力文字、現在位置の色分け
+- 空白を「·」、Tabを「⇥」、改行を「↵」として可視化
+- WPM、正確性、スコア、連続クリア数の計測
+- 問題完了後の用語・技術解説
+- 端末内へのベストスコア保存
+- 一時停止・再開
+- レスポンシブなダークUI
+- ログイン不要
+
+## モードと難易度
+
+### 一般モード
+
+思考法、学習法、経済、メディアリテラシー、ライフハック、雑学などを扱います。
+
+### エンジニアモード
+
+フロントエンド、バックエンド、データベース、ネットワーク、インフラ、セキュリティ、機械学習、Python、TypeScriptなどを扱います。
+
+### 難易度
+
+| レベル | 表示名 | 内容 |
+| --- | --- | --- |
+| 1 | FLOW | 短文中心、記号少なめ |
+| 2 | FOCUS | 複文、英数字、改行を含む |
+| 3 | VOID | 長文、コード、Tab、複雑な記号を含む |
+
+## 使い方
+
+1. GENERALまたはENGINEERを選択します。
+2. FLOW、FOCUS、VOIDから難易度を選択します。
+3. 1〜5 MINから制限時間を選択します。初期値は3分です。
+4. START SESSIONを押して入力を開始します。
+5. 問題文と入力欄の色を確認しながら、最後まで正確に入力します。
+6. 問題を完了すると次の問題と解説が表示されます。
+7. 制限時間終了後、WPM、正確性、スコア、クリア数を確認します。
+
+### キーボード操作
+
+| 操作 | キー |
+| --- | --- |
+| 改行文字を入力 | Alt + Enter |
+| Tab文字を入力 | Tab |
+| 空白文字を入力 | Space |
+| 一時停止 | Esc |
+| 誤入力を修正 | Backspace |
+
+通常のEnterキーだけでは改行されません。問題文に改行がある場合はAlt + Enterを使用してください。
+
+## 入力表示
+
+問題文では、入力済みの正解箇所を明るい文字、誤入力箇所を赤、次に入力する位置をライム色で表示します。
+
+YOUR INPUT欄には、実際に入力した文字をそのまま表示します。問題文と異なる文字は赤色になるため、何を誤入力したか確認できます。見えにくい制御文字は次の記号で表示します。
+
+- 空白: ·
+- Tab: ⇥
+- 改行: ↵
+
+## スコア指標
+
+| 指標 | 説明 |
+| --- | --- |
+| WPM | 5文字を1単語として換算した1分あたりの入力速度 |
+| ACCURACY | 全入力に対する正しい入力の割合 |
+| SCORE | 文字数、難易度、正確性、連続クリアを加味した得点 |
+| STREAK | ミスなしで連続クリアした問題数 |
+
+## 技術スタック
+
+| 分類 | 技術 |
+| --- | --- |
+| フロントエンド | React 19、TypeScript |
+| UI | Mantine 8、CSS、Tailwind CSS |
+| アプリケーション基盤 | vinext、Vite |
+| バックエンド | TypeScript、Next.js互換Route Handler |
+| ホスティング | OpenAI Sites、Cloudflare Workers互換ランタイム |
+| テスト | Node.js Test Runner |
+| データアクセス拡張 | Drizzle ORM、Cloudflare D1対応構成 |
+
+## アーキテクチャ
+
+画面、フロントエンドの状態管理、API、アプリケーションロジック、データ供給を分離しています。
+
+~~~
+Browser
+  |
+  v
+React UI
+  |
+  v
+Typing Session Hook
+  |
+  v
+Prompt API Client
+  |
+  v
+Route Handler
+  |
+  v
+Application Service
+  |
+  v
+Prompt Repository
+~~~
+
+主なディレクトリ:
+
+| パス | 役割 |
+| --- | --- |
+| app | ページ、レイアウト、APIエンドポイント |
+| frontend/components | UIコンポーネント |
+| frontend/hooks | セッション状態とタイピング判定 |
+| frontend/services | APIクライアント |
+| backend/application | ユースケース |
+| backend/domain | Repositoryインターフェース |
+| backend/infrastructure | Repository実装 |
+| backend/data | 問題・解説データ |
+| shared | フロントとバックで共有する型 |
+| tests | レンダリング、API、設定のテスト |
+
+## 必要環境
+
+- Node.js 22.13.0以上
+- npm
+
+## 開発手順
+
+リポジトリを取得します。
+
+~~~
+git clone https://github.com/wrr963/TouchTypingApp.git
+cd TouchTypingApp
+~~~
+
+依存パッケージをインストールします。
+
+~~~
 npm install
+~~~
+
+開発サーバーを起動します。
+
+~~~
 npm run dev
+~~~
+
+ブラウザで http://localhost:3000 を開きます。
+
+## 利用可能なスクリプト
+
+| コマンド | 説明 |
+| --- | --- |
+| npm run dev | 開発サーバーを起動 |
+| npm run build | 本番用ファイルを生成 |
+| npm run start | ビルド済みアプリを起動 |
+| npm test | 本番ビルド後にレンダリング・API・設定をテスト |
+| npm run lint | ESLintによる静的解析 |
+| npm run db:generate | D1を利用する場合のマイグレーション生成 |
+
+## 問題を追加する
+
+問題データは backend/data/prompts.ts にあります。TrainingPrompt型に従い、次の項目を設定します。
+
+- 一意なID
+- モード
+- 難易度
+- カテゴリ
+- タイトル
+- 入力対象の文章
+- 完了後に表示する解説
+
+改行は \n、Tabは \t を文章内に含めます。
+
+## テスト
+
+次のコマンドで、本番ビルドと自動テストを実行します。
+
+~~~
+npm test
+~~~
+
+テストでは次を確認します。
+
+- トップ画面のサーバーレンダリング
+- 問題APIのレスポンス
+- 3分の初期値
+- 1〜5分の選択肢
+- 入力文字と誤入力表示
+
+## 本番ビルド
+
+~~~
 npm run build
-```
+~~~
 
-This starter does not use `wrangler.jsonc`.
+生成されたdistディレクトリには、Cloudflare Workers互換のサーバー実行ファイルと静的アセットが含まれます。
 
-## Included Shape
+## デプロイ
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+このプロジェクトはOpenAI Sites向けに構成されています。
 
-## Workspace Auth Headers
+1. npm run buildで本番ビルドを作成します。
+2. .openai/hosting.jsonのproject_idを対象サイトと一致させます。
+3. 検証済みソースを対象サイトのソースリポジトリへpushします。
+4. dist、ホスティング設定、必要なマイグレーションを配布アーカイブへまとめます。
+5. Sitesで新しいバージョンを保存します。
+6. 保存したバージョンを非公開または指定の公開範囲へデプロイします。
+7. デプロイ完了後、公開URLで動作を確認します。
 
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
+CodexのSites機能を利用する場合は、プロジェクトを開いて「ビルドしてデプロイ」と依頼すると、ビルド、パッケージ作成、バージョン保存、公開まで実行できます。
 
-The user ID is stable for the same user on the same Site and different across Sites. Email and name are intended for display or contact purposes.
+## 環境変数
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+現在、必須の環境変数はありません。問題データとベストスコアは外部サービスを使わずに動作します。
 
-Treat the full name as optional and fall back to email when it is absent:
+## データとプライバシー
 
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+- ログイン機能はありません。
+- 入力内容はサーバーへ保存しません。
+- ベストスコアはブラウザのlocalStorageに保存します。
+- 問題データはTypeScriptファイルからAPI経由で配信します。

@@ -6,14 +6,14 @@ import { Providers } from "./providers";
 
 const title = "KEYDRIFT — 知識を鍛えるタイピングラボ";
 const description =
-  "英語・数字・記号・コードを打ちながら、速度と知識を同時に鍛える60秒のタッチタイピングトレーナー。";
+  "英語・数字・記号・コードを打ちながら、1〜5分のセッションで速度と知識を同時に鍛えるタッチタイピングトレーナー。";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
   const protocol = requestHeaders.get("x-forwarded-proto") ?? "https";
   const origin = host ? protocol + "://" + host : "http://localhost:3000";
-  const socialImage = origin + "/og.png";
+  const socialImage = origin + "/og-v2.png";
 
   return {
     title,

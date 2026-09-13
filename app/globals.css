@@ -273,7 +273,8 @@ main {
 }
 
 .mode-control,
-.difficulty-control {
+.difficulty-control,
+.duration-control {
   --sc-color: var(--ink);
   padding: 3px !important;
   border: 1px solid var(--line);
@@ -286,7 +287,8 @@ main {
 }
 
 .mode-control .mantine-SegmentedControl-indicator,
-.difficulty-control .mantine-SegmentedControl-indicator {
+.difficulty-control .mantine-SegmentedControl-indicator,
+.duration-control .mantine-SegmentedControl-indicator {
   border: 1px solid rgba(183, 255, 60, 0.32);
   border-radius: 0;
   background: var(--acid-soft);
@@ -294,12 +296,14 @@ main {
 }
 
 .mode-control .mantine-SegmentedControl-label,
-.difficulty-control .mantine-SegmentedControl-label {
+.difficulty-control .mantine-SegmentedControl-label,
+.duration-control .mantine-SegmentedControl-label {
   padding: 0;
 }
 
 .mode-control .mantine-SegmentedControl-control::before,
-.difficulty-control .mantine-SegmentedControl-control::before {
+.difficulty-control .mantine-SegmentedControl-control::before,
+.duration-control .mantine-SegmentedControl-control::before {
   border-color: var(--line);
 }
 
@@ -352,6 +356,31 @@ main {
   color: var(--dim);
   font-size: 8px;
   font-weight: 400;
+}
+
+.duration-control {
+  margin-top: 10px;
+}
+
+.duration-option {
+  height: 35px;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  font-family: var(--mono);
+}
+
+.duration-option b {
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.duration-option span {
+  color: var(--dim);
+  font-size: 6px;
+  letter-spacing: 0.08em;
 }
 
 .difficulty-detail {
@@ -444,8 +473,8 @@ main {
 
 .typing-stage {
   position: relative;
-  min-height: 360px;
-  padding: 44px 46px 37px;
+  min-height: 440px;
+  padding: 44px 46px 52px;
   border: 1px solid var(--line);
   background:
     linear-gradient(105deg, rgba(183, 255, 60, 0.02), transparent 32%),
@@ -609,6 +638,80 @@ main {
   tab-size: 3;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.input-echo {
+  margin-top: 28px;
+  padding: 15px 17px 17px;
+  border: 1px solid rgba(236, 242, 228, 0.08);
+  border-left: 2px solid rgba(183, 255, 60, 0.42);
+  background: rgba(183, 255, 60, 0.022);
+}
+
+.input-echo-head {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.14em;
+}
+
+.input-echo-head span:last-child {
+  color: #68705f;
+}
+
+.input-echo-text {
+  min-height: 34px;
+  color: #e9ede4;
+  font-family: var(--mono);
+  font-size: clamp(14px, 1.3vw, 18px);
+  line-height: 1.65;
+  tab-size: 3;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.input-placeholder {
+  color: #3f453d;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.input-char {
+  position: relative;
+  border-radius: 2px;
+}
+
+.input-correct {
+  color: #d9ded3;
+}
+
+.input-wrong {
+  margin-inline: 1px;
+  padding-inline: 2px;
+  background: rgba(255, 95, 109, 0.15);
+  color: var(--red);
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 95, 109, 0.8);
+  text-underline-offset: 4px;
+}
+
+.input-newline {
+  color: #82936c;
+  font-size: 0.8em;
+}
+
+.input-caret {
+  width: 2px;
+  height: 1.15em;
+  margin-left: 2px;
+  display: inline-block;
+  vertical-align: -0.2em;
+  background: var(--acid);
+  box-shadow: 0 0 8px rgba(183, 255, 60, 0.65);
+  animation: cursorPulse 0.9s steps(2, end) infinite;
 }
 
 .prompt-char {
@@ -1146,7 +1249,7 @@ footer {
   }
 
   .typing-stage {
-    min-height: 395px;
+    min-height: 470px;
     padding: 32px 20px 44px;
   }
 
@@ -1157,6 +1260,15 @@ footer {
   .prompt-text {
     font-size: 18px;
     line-height: 1.7;
+  }
+
+  .input-echo {
+    margin-top: 22px;
+    padding-inline: 12px;
+  }
+
+  .input-echo-text {
+    font-size: 14px;
   }
 
   .typing-foot {

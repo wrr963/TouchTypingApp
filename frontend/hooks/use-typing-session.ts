@@ -23,16 +23,23 @@ export type SessionPhase =
   | "paused"
   | "finished";
 
-const SESSION_SECONDS = 60;
+export type SessionMinutes = 1 | 2 | 3 | 4 | 5;
+
+const DEFAULT_SESSION_MINUTES: SessionMinutes = 3;
 const BEST_SCORE_KEY = "keydrift-best-score";
 
 export function useTypingSession() {
   const [mode, setModeState] = useState<TrainingMode>("general");
   const [difficulty, setDifficultyState] = useState<Difficulty>(2);
+  const [durationMinutes, setDurationMinutes] = useState<SessionMinutes>(
+    DEFAULT_SESSION_MINUTES,
+  );
   const [phase, setPhase] = useState<SessionPhase>("ready");
   const [prompt, setPrompt] = useState<TrainingPrompt | null>(null);
   const [typed, setTyped] = useState("");
-  const [remaining, setRemaining] = useState(SESSION_SECONDS);
+  const [remaining, setRemaining] = useState(
+    DEFAULT_SESSION_MINUTES * 60,
+  );
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
   const [completed, setCompleted] = useState(0);
@@ -46,6 +53,7 @@ export function useTypingSession() {
   const [loadError, setLoadError] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const durationSeconds = durationMinutes * 60;
 
   useEffect(() => {
     const saved = Number(window.localStorage.getItem(BEST_SCORE_KEY));
@@ -115,7 +123,7 @@ export function useTypingSession() {
   const start = useCallback(async () => {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     setPhase("loading");
-    setRemaining(SESSION_SECONDS);
+    setRemaining(durationSeconds);
     setScore(0);
     setCompleted(0);
     setCompletedChars(0);
@@ -127,7 +135,7 @@ export function useTypingSession() {
     setTyped("");
     await loadPrompt();
     setPhase((current) => (current === "ready" ? current : "running"));
-  }, [loadPrompt]);
+  }, [durationSeconds, loadPrompt]);
 
   const finishPrompt = useCallback(
     (finishedPrompt: TrainingPrompt, errors: number) => {
@@ -222,6 +230,14 @@ export function useTypingSession() {
     setLastLearned(null);
   }, []);
 
+  const selectDuration = useCallback((next: SessionMinutes) => {
+    setDurationMinutes(next);
+    setRemaining(next * 60);
+    setPhase("ready");
+    setPrompt(null);
+    setLastLearned(null);
+  }, []);
+
   const pause = useCallback(() => {
     if (phase === "running") setPhase("paused");
   }, [phase]);
@@ -233,11 +249,11 @@ export function useTypingSession() {
     setPhase("ready");
     setPrompt(null);
     setTyped("");
-    setRemaining(SESSION_SECONDS);
+    setRemaining(durationSeconds);
     setTransitioning(false);
-  }, []);
+  }, [durationSeconds]);
 
-  const elapsed = SESSION_SECONDS - remaining;
+  const elapsed = durationSeconds - remaining;
   const wpm = useMemo(() => {
     if (elapsed <= 0) return 0;
     return Math.round(((completedChars + typed.length) / 5) * (60 / elapsed));
@@ -249,11 +265,12 @@ export function useTypingSession() {
         : Math.max(0, Math.round(((keystrokes - errorKeystrokes) / keystrokes) * 100)),
     [errorKeystrokes, keystrokes],
   );
-  const progress = ((SESSION_SECONDS - remaining) / SESSION_SECONDS) * 100;
+  const progress = (elapsed / durationSeconds) * 100;
 
   return {
     mode,
     difficulty,
+    durationMinutes,
     phase,
     prompt,
     typed,
@@ -275,6 +292,7 @@ export function useTypingSession() {
     reset,
     selectMode,
     selectDifficulty,
+    selectDuration,
     onChange,
     onKeyDown,
   };

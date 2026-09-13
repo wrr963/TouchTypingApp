@@ -1,6 +1,9 @@
 "use client";
 
-import { useTypingSession } from "@/frontend/hooks/use-typing-session";
+import {
+  type SessionMinutes,
+  useTypingSession,
+} from "@/frontend/hooks/use-typing-session";
 import type { Difficulty, TrainingMode } from "@/shared/training";
 import {
   Badge,
@@ -44,6 +47,19 @@ const keyLabel = (character: string) => {
   return character;
 };
 
+const formatTime = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  return String(minutes).padStart(2, "0") + ":" + String(remainder).padStart(2, "0");
+};
+
+const inputCharacterLabel = (character: string) => {
+  if (character === " ") return "·";
+  if (character === "\n") return "↵";
+  if (character === "\t") return "⇥";
+  return character;
+};
+
 function PromptText({
   text,
   typed,
@@ -70,6 +86,52 @@ function PromptText({
           </span>
         );
       })}
+    </div>
+  );
+}
+
+function TypedInput({
+  text,
+  typed,
+}: {
+  text: string;
+  typed: string;
+}) {
+  return (
+    <div className="input-echo" aria-live="polite">
+      <div className="input-echo-head">
+        <span>YOUR INPUT</span>
+        <span>
+          {typed.length} / {text.length} CHARS
+        </span>
+      </div>
+      <div className="input-echo-text">
+        {typed.length === 0 && (
+          <span className="input-placeholder">入力した文字がここに表示されます</span>
+        )}
+        {Array.from(typed).map((character, index) => {
+          const correct = character === text[index];
+          return (
+            <span
+              className={
+                "input-char " +
+                (correct ? "input-correct" : "input-wrong") +
+                (character === "\n" ? " input-newline" : "")
+              }
+              title={
+                correct
+                  ? undefined
+                  : "正解: " + inputCharacterLabel(text[index] ?? "")
+              }
+              key={index + "-" + character}
+            >
+              {inputCharacterLabel(character)}
+              {character === "\n" && <br />}
+            </span>
+          );
+        })}
+        <span className="input-caret" aria-hidden="true" />
+      </div>
     </div>
   );
 }
@@ -135,7 +197,7 @@ export function TypingTrainer() {
           <div className="intro-copy">
             <p className="eyebrow">
               <span>ADVANCED TYPING PROTOCOL</span>
-              <span>SESSION / 60 SEC</span>
+              <span>SESSION / {session.durationMinutes} MIN</span>
             </p>
             <h1>
               THINK FAST.
@@ -152,7 +214,7 @@ export function TypingTrainer() {
           <div className="mode-panel">
             <div className="panel-label">
               <span>SELECT PROTOCOL</span>
-              <span>MODE / DIFFICULTY</span>
+              <span>MODE / LEVEL / TIME</span>
             </div>
             <SegmentedControl
               fullWidth
@@ -207,9 +269,29 @@ export function TypingTrainer() {
                 ),
               }))}
             />
+            <SegmentedControl
+              fullWidth
+              className="duration-control"
+              value={String(session.durationMinutes)}
+              disabled={configurationLocked}
+              onChange={(value) =>
+                session.selectDuration(Number(value) as SessionMinutes)
+              }
+              data={([1, 2, 3, 4, 5] as SessionMinutes[]).map((minutes) => ({
+                value: String(minutes),
+                label: (
+                  <span className="duration-option">
+                    <b>{minutes}</b>
+                    <span>MIN</span>
+                  </span>
+                ),
+              }))}
+            />
             <p className="difficulty-detail">
               <span>{DIFFICULTY_COPY[session.difficulty].detail}</span>
-              <b>× {session.difficulty}.0 SCORE</b>
+              <b>
+                {session.durationMinutes} MIN / × {session.difficulty}.0 SCORE
+              </b>
             </p>
           </div>
         </section>
@@ -226,9 +308,7 @@ export function TypingTrainer() {
               </div>
               <div className="timer">
                 <span>TIME LEFT</span>
-                <strong>
-                  00:{String(session.remaining).padStart(2, "0")}
-                </strong>
+                <strong>{formatTime(session.remaining)}</strong>
               </div>
             </div>
 
@@ -255,7 +335,8 @@ export function TypingTrainer() {
                     {modeCopy.title} / {DIFFICULTY_COPY[session.difficulty].name}
                   </h2>
                   <span className="launch-caption">
-                    60秒。正確さを保ち、流れを止めない。
+                    {session.durationMinutes}
+                    分。正確さを保ち、流れを止めない。
                   </span>
                   <Button
                     color="lime"
@@ -295,6 +376,10 @@ export function TypingTrainer() {
                       <span className="prompt-count">{completion}%</span>
                     </div>
                     <PromptText
+                      text={session.prompt.text}
+                      typed={session.typed}
+                    />
+                    <TypedInput
                       text={session.prompt.text}
                       typed={session.typed}
                     />
